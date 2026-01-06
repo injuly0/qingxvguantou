@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MoodFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'pixel': ['"Press Start 2P"', 'cursive'],
+            },
+            animation: {
+              'spin-slow': 'spin 20s linear infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'road-move': 'roadMove 0.6s linear infinite', 
+              'bubble-rise': 'bubbleRise 4s ease-in infinite',
+              'pixel-tree-move': 'pixelTreeMove 2s linear infinite',
+              'zoom-forward': 'zoomForward 20s ease-out infinite',
+              'walk-bob': 'walkBob 0.6s ease-in-out infinite',
+              'shadow-pass': 'shadowPass 4s linear infinite',
+              'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+              'fade-in': 'fadeIn 0.3s ease-out forwards',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-4px)' }, 
+              },
+              roadMove: {
+                '0%': { transform: 'translateY(0)' },
+                '100%': { transform: 'translateY(24px)' }, 
+              },
+              pixelTreeMove: {
+                '0%': { transform: 'translateY(-20px) scale(0.5)', opacity: '0' },
+                '10%': { opacity: '1' },
+                '100%': { transform: 'translateY(200px) scale(2)', opacity: '1' },
+              },
+              bubbleRise: {
+                '0%': { transform: 'translateY(100%)', opacity: '0' },
+                '50%': { opacity: '1' },
+                '100%': { transform: 'translateY(-20%)', opacity: '0' },
+              },
+              zoomForward: {
+                '0%': { transform: 'scale(1)' },
+                '100%': { transform: 'scale(1.25)' },
+              },
+              walkBob: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(3px)' },
+              },
+              shadowPass: {
+                '0%': { transform: 'translateY(-100%)', opacity: '0' },
+                '50%': { opacity: '0.1' },
+                '100%': { transform: 'translateY(100%)', opacity: '0' },
+              },
+              fadeInUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .pixelated { image-rendering: pixelated; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-900 text-white overflow-hidden">
+    <div id="root"></div>
+  </body>
+</html>

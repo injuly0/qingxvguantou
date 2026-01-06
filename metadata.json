@@ -1,0 +1,8 @@
+{
+  "name": "MoodFlow",
+  "description": "An immersive mood tracking application featuring animated cards for Ferris Wheel (Euphoria), Road Walk (Stability), and Deep Sea (Melancholy) states, integrated with Gemini for emotional reflection.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
