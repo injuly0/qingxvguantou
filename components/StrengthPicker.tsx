@@ -25,7 +25,7 @@ const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
     const anglePerCategory = 360 / categories.length; // 每个分类占 60度
 
     categories.forEach((cat, catIndex) => {
-      // 获取该分类下的所有优势
+      // 获取该分类下的所有力量
       const items = STRENGTHS_DATA.filter(s => s.category === cat);
       const baseAngle = catIndex * anglePerCategory;
       
@@ -85,14 +85,14 @@ const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden animate-fade-in">
       
       {/* 动态背景光晕 */}
-      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[140px] pointer-events-none transition-all duration-1000 ${isExpanded ? 'w-[800px] h-[800px] bg-indigo-900/10' : 'w-[400px] h-[400px] bg-amber-600/10'}`}></div>
+      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[140px] pointer-events-none transition-all duration-[1500ms] ease-out ${isExpanded ? 'w-[800px] h-[800px] bg-indigo-900/10' : 'w-[400px] h-[400px] bg-amber-600/10'}`}></div>
 
       {/* 顶部引导文字 */}
-      <div className={`absolute top-12 text-center px-6 z-10 transition-all duration-1000 ${isExpanded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+      <div className={`absolute top-12 text-center px-6 z-10 transition-all duration-1000 ${isExpanded ? 'translate-y-0 opacity-100 delay-500' : 'translate-y-10 opacity-0'}`}>
         <h2 className="text-2xl font-light tracking-[0.2em] mb-2 text-white/90">选择我的力量</h2>
         <div className="h-0.5 w-12 bg-white/20 mx-auto mb-2"></div>
         <p className="text-slate-400 text-xs max-w-xs mx-auto leading-relaxed">
-          {mode === 'current' ? "点亮你【目前拥有】的优势星" : "点亮你【向往拥有】的优势星"}
+          {mode === 'current' ? "点亮你【目前拥有】的力量星" : "点亮你【向往拥有】的力量星"}
         </p>
       </div>
 
@@ -104,7 +104,7 @@ const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
       )}
 
       {/* 星系交互区 - 整体容器 */}
-      <div className={`relative w-full h-full flex items-center justify-center overflow-visible transition-all duration-1000 ${isExpanded ? 'scale-100 opacity-100' : 'scale-50 opacity-100'}`}>
+      <div className={`relative w-full h-full flex items-center justify-center overflow-visible transition-all duration-[1200ms] ease-out ${isExpanded ? 'scale-100 opacity-100' : 'scale-50 opacity-100'}`}>
         
         {/* 6大美德分类标签 (仅在展开时显示) */}
         {isExpanded && categories.map((cat, i) => {
@@ -117,9 +117,12 @@ const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
           return (
             <div 
               key={cat}
-              className="absolute text-white/30 text-[10px] font-bold tracking-[0.2em] pointer-events-none uppercase transition-opacity duration-1000 delay-500 opacity-100"
+              className="absolute text-white/30 text-[10px] font-bold tracking-[0.2em] pointer-events-none uppercase transition-all duration-1000 opacity-0 animate-fade-in"
               style={{
-                transform: `translate(${x}px, ${y}px)`
+                transform: `translate(${x}px, ${y}px)`,
+                animationDelay: `${1200 + i * 100}ms`,
+                opacity: 0,
+                animationFillMode: 'forwards'
               }}
             >
               {cat}
@@ -130,7 +133,7 @@ const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
         {/* 核心球体 */}
         <button
           onClick={() => setIsExpanded(true)}
-          className={`relative z-50 transition-all duration-[1500ms] cubic-bezier(0.23, 1, 0.32, 1)
+          className={`relative z-50 transition-all duration-[1200ms] cubic-bezier(0.16, 1, 0.3, 1)
             ${!isExpanded 
               ? 'w-32 h-32 bg-gradient-to-tr from-amber-400 via-yellow-200 to-orange-300 animate-core-breathe shadow-[0_0_100px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95' 
               : 'w-16 h-16 bg-white/5 backdrop-blur-2xl border border-white/10 scale-100 shadow-[0_0_40px_rgba(255,255,255,0.1)]'
@@ -143,32 +146,36 @@ const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
           
           {/* 展开后的核心文字 */}
           {isExpanded && (
-             <span className="text-[10px] font-bold text-white/60 tracking-widest">SELF</span>
+             <span className="text-[10px] font-bold text-white/60 tracking-widest animate-fade-in delay-700">SELF</span>
           )}
         </button>
 
-        {/* 环绕的 24 优势星 (小球) */}
+        {/* 环绕的 24 力量星 (小球) */}
         {/* 使用 spin-slow 让整个星系缓慢旋转，保持结构完整性 */}
         <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${isExpanded ? 'animate-spin-slow' : ''}`} style={{ animationDuration: '120s' }}>
-          {strengthsWithLayout.map((s) => {
+          {strengthsWithLayout.map((s, i) => {
             const isCurrent = selectedStrengths.includes(s.id);
             const isIdeal = selectedIdeals.includes(s.id);
             
+            // Stagger delay calculation (40ms per item)
+            const delay = i * 40;
+
             return (
               <div
                 key={s.id}
-                className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-[1200ms] ease-out
+                className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-[800ms] cubic-bezier(0.34, 1.56, 0.64, 1)
                   ${isExpanded ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}
                 `}
                 style={isExpanded ? {
-                  transform: `rotate(${s.layout.angle}deg) translateX(${s.layout.radius}px) rotate(-${s.layout.angle}deg)`
-                } as any : {}}
+                  transform: `rotate(${s.layout.angle}deg) translateX(${s.layout.radius}px) rotate(-${s.layout.angle}deg)`,
+                  transitionDelay: `${delay}ms`
+                } as any : {
+                  transitionDelay: '0ms'
+                }}
               >
                 {/* 
                    在这里我们对每个小球做一个反向旋转的抵消，
                    以便当外层大容器旋转时，小球内的文字也能保持相对水平（或者至少不会乱转）。
-                   *注意*: 因为外层在旋转，这里的文字其实会跟着公转。
-                   为了阅读方便，我们让小球保持静止角度，通过反向旋转抵消大容器的 spin。
                 */}
                 <div className="animate-spin-slow" style={{ animationDirection: 'reverse', animationDuration: '120s' }}>
                   <button
@@ -200,7 +207,7 @@ const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
       </div>
 
       {/* 底部交互面板 */}
-      <div className={`absolute bottom-8 w-full max-w-sm px-8 space-y-6 transition-all duration-1000 ${isExpanded ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
+      <div className={`absolute bottom-8 w-full max-w-sm px-8 space-y-6 transition-all duration-1000 delay-700 ${isExpanded ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
         
         {/* 模式切换 */}
         <div className="flex bg-white/5 backdrop-blur-md p-1 rounded-2xl border border-white/10 shadow-inner">
@@ -209,7 +216,7 @@ const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
             className={`flex-1 py-3 rounded-xl text-xs font-bold tracking-widest transition-all duration-300
               ${mode === 'current' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
           >
-            我的优势 ({selectedStrengths.length})
+            我的力量 ({selectedStrengths.length})
           </button>
           <button 
             onClick={() => setMode('ideal')}

@@ -15,10 +15,16 @@ export interface UserTraits {
   ideals: string[];    // 向往的优势
 }
 
+export interface StrengthTemplates {
+  internal?: string; // 内在力量模版 (Agency)
+  external?: string; // 外在馈赠模版 (Connection)
+}
+
 export interface StrengthDetail {
   id: string;
   name: string;
   category: string;
+  templates?: StrengthTemplates;
 }
 
 export interface ChatMessage {

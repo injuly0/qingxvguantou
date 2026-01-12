@@ -27,6 +27,13 @@
               'fade-in': 'fadeIn 0.3s ease-out forwards',
               'core-breathe': 'coreBreathe 6s ease-in-out infinite',
               'orbit': 'orbit linear infinite',
+              // New Animations for Crystal Ball
+              'converge-top': 'convergeTop 1.5s ease-in forwards',
+              'converge-left': 'convergeLeft 1.5s ease-in forwards',
+              'converge-right': 'convergeRight 1.5s ease-in forwards',
+              'crystal-pulse': 'crystalPulse 3s ease-in-out infinite',
+              'swirl': 'swirl 4s linear infinite',
+              'dissolve': 'dissolve 1s ease-out forwards',
             },
             keyframes: {
               coreBreathe: {
@@ -81,6 +88,31 @@
               fadeIn: {
                 '0%': { opacity: '0' },
                 '100%': { opacity: '1' },
+              },
+              // Crystal Ball Keyframes
+              convergeTop: {
+                '0%': { transform: 'translate(-50%, -40vh) scale(1)', opacity: '1' },
+                '100%': { transform: 'translate(-50%, -50%) scale(0.1)', opacity: '0' },
+              },
+              convergeLeft: {
+                '0%': { transform: 'translate(-45vw, -50%) scale(1)', opacity: '1' },
+                '100%': { transform: 'translate(-50%, -50%) scale(0.1)', opacity: '0' },
+              },
+              convergeRight: {
+                '0%': { transform: 'translate(45vw, -50%) scale(1)', opacity: '1' },
+                '100%': { transform: 'translate(-50%, -50%) scale(0.1)', opacity: '0' },
+              },
+              crystalPulse: {
+                '0%, 100%': { filter: 'brightness(1) drop-shadow(0 0 20px rgba(167, 139, 250, 0.4))' },
+                '50%': { filter: 'brightness(1.3) drop-shadow(0 0 50px rgba(167, 139, 250, 0.8))' },
+              },
+              swirl: {
+                'from': { transform: 'rotate(0deg)' },
+                'to': { transform: 'rotate(360deg)' },
+              },
+              dissolve: {
+                '0%': { opacity: '1' },
+                '100%': { opacity: '0' },
               }
             }
           },
