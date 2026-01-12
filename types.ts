@@ -1,3 +1,4 @@
+
 export enum MoodType {
   EUPHORIC = 'EUPHORIC', // Ferris Wheel
   STABLE = 'STABLE',     // Road
@@ -10,15 +11,14 @@ export enum HappinessSource {
 }
 
 export interface UserTraits {
-  strengths: string[];
-  idealTrait: string;
+  strengths: string[]; // 当前拥有的优势
+  ideals: string[];    // 向往的优势
 }
 
-export interface MoodConfig {
-  type: MoodType;
-  title: string;
-  description: string;
-  color: string;
+export interface StrengthDetail {
+  id: string;
+  name: string;
+  category: string;
 }
 
 export interface ChatMessage {

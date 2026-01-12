@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
@@ -24,8 +25,24 @@
               'shadow-pass': 'shadowPass 4s linear infinite',
               'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
               'fade-in': 'fadeIn 0.3s ease-out forwards',
+              'core-breathe': 'coreBreathe 6s ease-in-out infinite',
+              'orbit': 'orbit linear infinite',
             },
             keyframes: {
+              coreBreathe: {
+                '0%, 100%': { 
+                  transform: 'scale(1)', 
+                  boxShadow: '0 0 60px rgba(251, 191, 36, 0.3), inset 0 0 20px rgba(251, 191, 36, 0.2)' 
+                },
+                '50%': { 
+                  transform: 'scale(1.12)', 
+                  boxShadow: '0 0 120px rgba(251, 191, 36, 0.6), inset 0 0 40px rgba(251, 191, 36, 0.4)' 
+                },
+              },
+              orbit: {
+                'from': { transform: 'rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg)' },
+                'to': { transform: 'rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg)' },
+              },
               float: {
                 '0%, 100%': { transform: 'translateY(0)' },
                 '50%': { transform: 'translateY(-4px)' }, 
@@ -74,6 +91,9 @@
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       .pixelated { image-rendering: pixelated; }
+      :root {
+        --orbit-radius: 120px;
+      }
     </style>
   <script type="importmap">
 {

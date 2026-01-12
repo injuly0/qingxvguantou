@@ -61,7 +61,8 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
   const getDynamicTemplate = () => {
     if (!userTraits) return "在这里记录快乐瞬间...";
     const strength = userTraits.strengths[0];
-    const ideal = userTraits.idealTrait;
+    // Fix: Access userTraits.ideals instead of userTraits.idealTrait
+    const ideal = userTraits.ideals[0];
     return `今天我发现自己很 ${strength}，因为我...`;
   };
 
@@ -78,7 +79,7 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
     setStep(InputStep.INSIGHT);
     
     const context = userTraits ? 
-      `用户优势: ${userTraits.strengths.join(',')}, 理想特质: ${userTraits.idealTrait}, 快乐来源: ${selectedSource}` : 
+      `用户优势: ${userTraits.strengths.join(',')}, 理想特质: ${userTraits.ideals.join(',')}, 快乐来源: ${selectedSource}` : 
       '';
     const result = await analyzeMood(mood, `${context}\n用户记录: ${inputText}`);
     setResponse(result);
