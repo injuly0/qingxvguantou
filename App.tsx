@@ -12,6 +12,9 @@ const App: React.FC = () => {
   const [activeMood, setActiveMood] = useState<MoodType>(MoodType.EUPHORIC);
   const [inputActive, setInputActive] = useState(false);
   
+  // Data Version Control (Force refresh Belief Tree when data changes)
+  const [dataVersion, setDataVersion] = useState(0);
+  
   // View State: 0 = Profile (Left), 1 = Main (Center), 2 = Tree (Right)
   const [currentView, setCurrentView] = useState(1);
   
@@ -132,7 +135,8 @@ const App: React.FC = () => {
 
         {/* --- PAGE 2: RIGHT (Belief Tree) --- */}
         <div className="w-1/3 h-full relative">
-          <BeliefTree onBack={() => navigateTo(1)} />
+          {/* We pass dataVersion to trigger a refresh when data changes */}
+          <BeliefTree onBack={() => navigateTo(1)} refreshTrigger={dataVersion} />
         </div>
 
       </div>
@@ -145,6 +149,8 @@ const App: React.FC = () => {
             mood={activeMood} 
             onBack={() => {
               setInputActive(false);
+              // Trigger refresh when closing input (data might have changed)
+              setDataVersion(prev => prev + 1);
             }} 
           />
         </div>

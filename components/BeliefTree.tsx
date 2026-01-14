@@ -8,6 +8,7 @@ import { calculatePosition } from '../utils/crystalBallSystem';
 
 interface Props {
   onBack: () => void;
+  refreshTrigger: number; // New prop to trigger re-fetch
 }
 
 const LEVEL_THRESHOLDS = {
@@ -16,20 +17,21 @@ const LEVEL_THRESHOLDS = {
   3: 999 // 8+ entries -> Level 3
 };
 
-const BeliefTree: React.FC<Props> = ({ onBack }) => {
+const BeliefTree: React.FC<Props> = ({ onBack, refreshTrigger }) => {
   const [entries, setEntries] = useState<MoodEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<MoodEntry | null>(null);
   const [showLevelInfo, setShowLevelInfo] = useState(false);
   const [rechargeId, setRechargeId] = useState<string | null>(null);
 
   // Load data via Service
+  // Added refreshTrigger to dependencies so it re-runs when parent signals update
   useEffect(() => {
     const loadData = async () => {
       const data = await StorageService.getAllEntries();
       setEntries(data);
     };
     loadData();
-  }, []);
+  }, [refreshTrigger]);
 
   // Calculate Level (Business Logic)
   const { level, progress, nextLevelTarget } = useMemo(() => {
@@ -126,7 +128,7 @@ const BeliefTree: React.FC<Props> = ({ onBack }) => {
 
       {/* Header */}
       <div className="relative z-50 w-full p-6 flex justify-between items-start">
-        <div className="flex items-center gap-2 text-white/50 text-xs uppercase tracking-widest">
+        <div className="flex items-center gap-2 text-white/50 text-xs uppercase tracking-widest cursor-pointer hover:text-white transition-colors" onClick={onBack}>
            <ArrowLeft size={16} /> 
            <span>Swipe Back</span>
         </div>
