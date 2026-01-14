@@ -2,13 +2,14 @@
 import React, { useState, useMemo } from 'react';
 import { UserTraits } from '../types';
 import { STRENGTHS_DATA } from '../data/strengths';
-import { ChevronRight, Check } from 'lucide-react';
+import { ChevronRight, Check, ArrowLeft } from 'lucide-react';
 
 interface Props {
   onComplete: (traits: UserTraits) => void;
+  onBack: () => void;
 }
 
-const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
+const StrengthPicker: React.FC<Props> = ({ onComplete, onBack }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedStrengths, setSelectedStrengths] = useState<string[]>([]);
   const [selectedIdeals, setSelectedIdeals] = useState<string[]>([]);
@@ -84,6 +85,14 @@ const StrengthPicker: React.FC<Props> = ({ onComplete }) => {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden animate-fade-in">
       
+      {/* Back Button */}
+      <button 
+        onClick={onBack}
+        className="absolute top-6 left-6 z-[110] p-2 text-white/50 hover:text-white transition-colors rounded-full hover:bg-white/10"
+      >
+        <ArrowLeft size={24} />
+      </button>
+
       {/* 动态背景光晕 */}
       <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[140px] pointer-events-none transition-all duration-[1500ms] ease-out ${isExpanded ? 'w-[800px] h-[800px] bg-indigo-900/10' : 'w-[400px] h-[400px] bg-amber-600/10'}`}></div>
 

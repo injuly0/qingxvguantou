@@ -34,6 +34,10 @@
               'crystal-pulse': 'crystalPulse 3s ease-in-out infinite',
               'swirl': 'swirl 4s linear infinite',
               'dissolve': 'dissolve 1s ease-out forwards',
+              // Belief Tree Animations
+              'tree-sway': 'treeSway 8s ease-in-out infinite alternate',
+              'glow-pulse': 'glowPulse 4s ease-in-out infinite',
+              'float-random': 'floatRandom 10s ease-in-out infinite',
             },
             keyframes: {
               coreBreathe: {
@@ -113,6 +117,21 @@
               dissolve: {
                 '0%': { opacity: '1' },
                 '100%': { opacity: '0' },
+              },
+              // Tree Animations
+              treeSway: {
+                '0%': { transform: 'rotate(-2deg)' },
+                '100%': { transform: 'rotate(2deg)' },
+              },
+              glowPulse: {
+                '0%, 100%': { filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.4))' },
+                '50%': { filter: 'drop-shadow(0 0 25px rgba(255,255,255,0.8))' },
+              },
+              floatRandom: {
+                 '0%, 100%': { transform: 'translate(0, 0)' },
+                 '25%': { transform: 'translate(5px, -5px)' },
+                 '50%': { transform: 'translate(-3px, 5px)' },
+                 '75%': { transform: 'translate(3px, 3px)' },
               }
             }
           },
