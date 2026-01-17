@@ -49,6 +49,7 @@ export interface CrystalVisuals {
     nebula: string;
   };
   layoutSeed: number; // A random number (0-100) to determine position deterministically
+  isAmber?: boolean; // New Flag: If true, it sits in the roots (Resilience Lab result)
 }
 
 // 3. Interaction Stats: Mutable data that changes over time.

@@ -27,7 +27,7 @@
 | `happiness_source`| VARCHAR(20) | `content.source` | INTERNAL (内在) 或 EXTERNAL (外在) |
 | `insight_text` | TEXT | `content.insightText` | 第三步：感悟/咒语 |
 | `image_url` | VARCHAR(255)| `content.imageFile` | 图片的 URL 地址 (后端需处理上传) |
-| `visual_config` | JSON | `visuals` | **关键**: 存储水晶球的视觉参数 (颜色, 种子, 样式) |
+| `visual_config` | JSON | `visuals` | **关键**: 存储水晶球的视觉参数 (颜色, 种子, 样式, isAmber) |
 | `click_count` | INT | `stats.clickCount` | **关键**: 充能/点击次数 (决定树上高度) |
 | `last_interacted_at`| DATETIME | `stats.lastInteractionAt`| 最后一次点击的时间 |
 
@@ -37,6 +37,7 @@
 {
   "styleVariant": "nebula",
   "layoutSeed": 42,
+  "isAmber": true, // New: Indicates if this is a buried memory
   "colorTheme": {
     "border": "border-amber-200/50",
     "glow": "shadow-[...]",
@@ -54,12 +55,3 @@
 | `user_id` | VARCHAR(36) (FK) | 关联用户 |
 | `strength_id` | VARCHAR(50) | 力量 ID (如 'bravery', 'curiosity') |
 | `type` | ENUM | 'CURRENT' (现有) 或 'IDEAL' (向往) |
-
-## 后端迁移指南 (Migration Guide)
-当你想从 LocalStorage 切换到真实数据库时：
-
-1.  **建表**: 在你的数据库 (MySQL/PostgreSQL) 中创建上述表。
-2.  **API 开发**: 开发一个后端 API (例如 `GET /api/entries`)，它需要返回与 `types.ts` 中 `MoodEntry` 结构一致的 JSON 数据。
-3.  **前端替换**: 修改 `services/storageService.ts`，将 `localStorage.getItem` 替换为 `fetch('/api/entries')`。
-
-前端的 UI 组件（水晶球、树、卡片）**不需要任何修改**。
