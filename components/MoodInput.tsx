@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { MoodType, HappinessSource, UserTraits, StrengthDetail } from '../types';
 import { STRENGTHS_DATA } from '../data/strengths';
 import { ArrowLeft, Gift, Heart, Mic, Image as ImageIcon, X, Sparkles, Wand2, ChevronRight, Quote, Zap, Clock, PieChart, Shield, Sprout, ArrowDown, Brain } from 'lucide-react';
@@ -72,7 +72,10 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
   const [showPicker, setShowPicker] = useState(false);
 
   // --- LAB STATE (Negative Flow) ---
-  const [timeValue, setTimeValue] = useState(0); // 0 to 100
+  const [timeSliderValue, setTimeSliderValue] = useState(0); // 0 to 100 (Input Value)
+  const [calculatedDays, setCalculatedDays] = useState(0); // Actual days (Logic Value)
+  const [lastMilestone, setLastMilestone] = useState<string>('now'); // For haptic feedback
+  
   const [affectedAreas, setAffectedAreas] = useState<string[]>([]);
   const [responsibilityMe, setResponsibilityMe] = useState(100);
   const [externalFactors, setExternalFactors] = useState<string[]>([]);
@@ -229,7 +232,7 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
   };
 
   const generateLabInsight = () => {
-    const timeFrame = timeValue > 90 ? "十年" : timeValue > 60 ? "一年" : timeValue > 30 ? "下个月" : "下周";
+    const timeFrame = calculatedDays > 3650 ? "十年" : calculatedDays > 365 ? "一年" : calculatedDays > 30 ? "下个月" : "下周";
     const factors = externalFactors.length > 0 ? `，且受到${externalFactors.join('、')}的影响` : "";
     const safeAreas = ["健康", "家庭", "工作", "社交", "爱好", "自我"].filter(a => !affectedAreas.includes(a));
     const shine = safeAreas.length > 0 ? `。虽然有些糟糕，但我的${safeAreas.slice(0,2).join('和')}依然安好` : "";
@@ -239,48 +242,109 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
     setStep(InputStep.LAB_ENERGIZATION);
   };
 
-  // Helper for Time Scroll Date Calculation
-  const getFutureDate = (days: number) => {
+  // --- NON-LINEAR TIME SCROLL LOGIC ---
+
+  // Convert Slider (0-100) to Days (0 - 18250 approx 50 years)
+  // Scale:
+  // 0-25%   -> 0-7 days (Fine control for first week)
+  // 25-50%  -> 7-30 days (Month view)
+  // 50-75%  -> 30-365 days (Year view)
+  // 75-100% -> 1-50 years (Lifetime view)
+  const calculateDaysFromSlider = (val: number) => {
+    if (val <= 25) {
+      // 0-7 days. Linear.
+      return Math.round((val / 25) * 7);
+    } else if (val <= 50) {
+      // 7-30 days. Linear mapping of remaining range.
+      // range 25 units maps to 23 days (30-7)
+      return Math.round(7 + ((val - 25) / 25) * 23);
+    } else if (val <= 75) {
+      // 30-365 days.
+      return Math.round(30 + ((val - 50) / 25) * 335);
+    } else {
+      // 1 year to 50 years (approx 18000 days). Exponential-ish feel.
+      return Math.round(365 + ((val - 75) / 25) * 18000);
+    }
+  };
+
+  // Triggered on slider change
+  const handleTimeSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value);
+    setTimeSliderValue(val);
+    const days = calculateDaysFromSlider(val);
+    setCalculatedDays(days);
+
+    // Haptic & Threshold Check
+    let currentMilestone = '';
+    if (days === 0) currentMilestone = 'now';
+    else if (days === 7) currentMilestone = 'week';
+    else if (days === 30) currentMilestone = 'month';
+    else if (days === 365) currentMilestone = 'year';
+    else if (days > 3650) currentMilestone = 'decade';
+
+    // "顿挫感": Vibration when hitting key milestones
+    if (currentMilestone && currentMilestone !== lastMilestone) {
+       if (navigator.vibrate) {
+         navigator.vibrate(10); // Short tick
+       }
+       setLastMilestone(currentMilestone);
+    } else if (!currentMilestone) {
+       setLastMilestone('');
+    }
+  };
+
+  // Format Helper
+  const getFutureDateStr = (days: number) => {
+    if (days === 0) return "今天";
     const date = new Date();
     date.setDate(date.getDate() + days);
-    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+    return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`;
   };
 
-  // Helper for Time Scroll Content
-  const getTimeContext = (val: number) => {
-    if (val < 15) return { 
-        label: "NOW", 
-        date: "今天", 
-        question: "它现在看起来像一块巨石吗？", 
-        opacity: 1, blur: 0, scale: 1 
-    };
-    if (val < 45) return { 
-        label: "+1 WEEK", 
-        date: getFutureDate(7), 
-        question: "下周的今天，这件事还会刺痛你吗？", 
-        opacity: 0.9, blur: 1, scale: 0.95 
-    };
-    if (val < 75) return { 
-        label: "+1 MONTH", 
-        date: getFutureDate(30), 
-        question: "下个月的这一天，它会影响你吃早餐的心情吗？", 
-        opacity: 0.7, blur: 3, scale: 0.8 
-    };
-    if (val < 95) return { 
-        label: "+1 YEAR", 
-        date: getFutureDate(365), 
-        question: "一年后的今天，这件事会改变你的人生轨迹吗？", 
-        opacity: 0.4, blur: 5, scale: 0.6 
-    };
-    return { 
-        label: "+10 YEARS", 
-        date: getFutureDate(3650), 
-        question: "十年后回望，这只是你漫长人生故事里的一行注脚。", 
-        opacity: 0.1, blur: 10, scale: 0.4 
-    };
+  // Helper for Time Scroll Visual Context
+  const getTimeContext = (days: number) => {
+    const dateStr = getFutureDateStr(days);
+    
+    let label = "";
+    let question = "";
+    let opacity = 1;
+    let blur = 0;
+    let scale = 1;
+
+    if (days === 0) {
+      label = "此刻 (NOW)";
+      question = "它现在看起来像一块巨石吗？";
+    } else if (days <= 7) {
+      label = `+${days}天 (1 WEEK)`;
+      question = "这几天的睡眠和食欲，真的会被它彻底摧毁吗？";
+      opacity = 0.95; 
+      blur = 0.5;
+      scale = 0.98;
+    } else if (days <= 30) {
+      label = `+${days}天 (1 MONTH)`;
+      question = "下个月的这一天，它还会是你生活的重心吗？";
+      opacity = 0.8;
+      blur = 2;
+      scale = 0.9;
+    } else if (days <= 365) {
+      label = days < 60 ? `+2个月` : days < 180 ? `+半年` : `+1年`;
+      question = "一年后的今天，这件事是否只是茶余饭后的谈资？";
+      opacity = 0.6;
+      blur = 4;
+      scale = 0.7;
+    } else {
+      const years = Math.floor(days / 365);
+      label = `+${years}年 (FUTURE)`;
+      question = "在漫长的一生中，这只是短暂的一行注脚。";
+      opacity = 0.2;
+      blur = 8;
+      scale = 0.5;
+    }
+
+    return { label, dateStr, question, opacity, blur, scale };
   };
 
-  const timeContext = getTimeContext(timeValue);
+  const timeContext = useMemo(() => getTimeContext(calculatedDays), [calculatedDays]);
 
   // UI Helpers
   const getContainerBg = () => {
@@ -293,8 +357,10 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
       case MoodType.DEPRESSED: 
         // Lab Step 2 (Time) background transition
         if (step === InputStep.LAB_PERMANENCE) {
-            const lightness = 10 + (timeValue / 100) * 15; // 10% to 25% lightness
-            return `bg-slate-900`; // We handle dynamic bg via style in render
+            // Darkens as we scroll further into future
+            const darkness = Math.min(0.8, timeSliderValue / 100); 
+            // We handle dynamic bg via style in render to avoid tailwind class purge issues
+            return `bg-slate-900`; 
         }
         return 'from-slate-900 via-slate-800 to-black';
       default: return 'from-white to-slate-100';
@@ -312,7 +378,8 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
     <div 
       className={`fixed inset-0 z-50 flex flex-col bg-gradient-to-b ${getContainerBg()} transition-all duration-700 overflow-hidden ${isFadingOut ? 'opacity-0 duration-1000' : 'opacity-100'}`}
       style={step === InputStep.LAB_PERMANENCE ? {
-        background: `linear-gradient(to right, rgb(15, 23, 42), rgb(${30 + timeValue}, ${41 + timeValue}, ${59 + timeValue}))` 
+        // Dynamic darkening effect based on time travel distance
+        background: `linear-gradient(to right, rgb(15, 23, 42), rgb(${15 + timeSliderValue/3}, ${23 + timeSliderValue/3}, ${42 + timeSliderValue/3}))` 
       } : {}}
     >
       
@@ -429,7 +496,7 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
                 <div className="flex-1 flex flex-col p-6 animate-fade-in items-center justify-start max-w-md mx-auto w-full relative">
                    <PsychologyLabel 
                       title="时间心理学 · 心理距离" 
-                      content="当我们将当下的烦恼置于长远的时间维度中（Temporal Distancing），大脑会重新评估其重要性。具体的日期能激活具象思维，打破“痛苦将永恒持续”的错觉。"
+                      content="当我们将当下的烦恼置于长远的时间维度中（Temporal Distancing），大脑会重新评估其重要性。我们往往高估了当下的痛苦，而低估了时间的治愈力。"
                     />
 
                    <div className="text-center mb-6 z-10 mt-2">
@@ -437,17 +504,17 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
                       <h3 className="text-lg font-light text-white">时光卷轴</h3>
                    </div>
 
-                   {/* Dynamic Question */}
-                   <div className="w-full px-6 text-center mb-6">
-                      <p className="text-blue-200/80 text-sm font-medium tracking-wide animate-pulse">
+                   {/* Dynamic Question with scale bump effect on milestone change */}
+                   <div key={lastMilestone} className="w-full px-6 text-center mb-6 min-h-[40px] animate-fade-in">
+                      <p className="text-blue-200/80 text-sm font-medium tracking-wide">
                          {timeContext.question}
                       </p>
                    </div>
 
-                   {/* Text that fades/blurs/scales */}
+                   {/* Text that fades/blurs/scales based on scroll */}
                    <div className="relative w-full h-48 flex items-center justify-center mb-10 px-4 shrink-0">
                       <p 
-                        className="text-2xl font-serif text-white text-center transition-all duration-500 ease-out break-words line-clamp-4"
+                        className="text-2xl font-serif text-white text-center transition-all duration-300 ease-out break-words line-clamp-4"
                         style={{ 
                           opacity: timeContext.opacity,
                           filter: `blur(${timeContext.blur}px)`,
@@ -459,37 +526,63 @@ const MoodInput: React.FC<Props> = ({ mood, onBack }) => {
                    </div>
 
                    {/* Custom Scroll Input */}
-                   <div className="w-full space-y-6 z-10 mt-auto">
+                   <div className="w-full space-y-6 z-10 mt-auto px-2">
                       {/* Date Indicator */}
-                      <div className="text-center">
-                         <span className="text-[10px] text-blue-300/50 uppercase tracking-widest mb-1 block">
-                           {timeContext.label}
-                         </span>
-                         <span className="text-3xl font-mono text-white font-bold tracking-tight">
-                           {timeContext.date}
-                         </span>
+                      <div className="flex justify-between items-end mb-4 border-b border-white/10 pb-2">
+                         <div className="flex flex-col text-left">
+                            <span className="text-[10px] text-blue-300/50 uppercase tracking-widest block">
+                              Target Date
+                            </span>
+                            <span className="text-xl font-mono text-white font-bold tracking-tight animate-fade-in">
+                              {timeContext.dateStr}
+                            </span>
+                         </div>
+                         <div className="text-right">
+                            <span className={`text-sm font-bold transition-all duration-200 ${lastMilestone ? 'text-white scale-110' : 'text-blue-200/70'}`}>
+                              {timeContext.label}
+                            </span>
+                         </div>
                       </div>
 
-                      <div className="relative h-12 w-full flex items-center">
-                        <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-slate-700 via-blue-900 to-sky-900 rounded-full"></div>
+                      <div className="relative h-14 w-full flex items-center">
+                        {/* Track Background */}
+                        <div className="absolute inset-x-0 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                           <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-75" style={{ width: `${timeSliderValue}%` }}></div>
+                        </div>
+
+                        {/* Milestones Dots (Visual Guides) */}
+                        <div className="absolute inset-x-0 h-1.5 pointer-events-none">
+                            <div className="absolute left-[25%] top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white/30"></div>
+                            <div className="absolute left-[50%] top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white/30"></div>
+                            <div className="absolute left-[75%] top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white/30"></div>
+                        </div>
+
                         <input 
                           type="range" 
                           min="0" 
                           max="100" 
-                          value={timeValue} 
-                          onChange={(e) => setTimeValue(Number(e.target.value))}
-                          className="w-full absolute z-20 h-12 opacity-0 cursor-pointer"
+                          step="0.1" // Allow fine scrubbing
+                          value={timeSliderValue} 
+                          onChange={handleTimeSliderChange}
+                          className="w-full absolute z-20 h-14 opacity-0 cursor-pointer"
                         />
+                        
+                        {/* Custom Thumb */}
                         <div 
-                          className="absolute w-6 h-6 bg-white rounded-full shadow-[0_0_15px_white] pointer-events-none transition-all duration-75 ease-out flex items-center justify-center"
-                          style={{ left: `calc(${timeValue}% - 12px)` }}
+                          className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.5)] pointer-events-none transition-all duration-75 ease-out flex items-center justify-center border-4 border-slate-900"
+                          style={{ left: `calc(${timeSliderValue}% - 16px)` }}
                         >
-                           <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                           <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
                         </div>
-                        {/* Ticks */}
-                        {[0, 25, 50, 75, 100].map(tick => (
-                           <div key={tick} className="absolute w-0.5 h-2 bg-white/20" style={{ left: `${tick}%` }}></div>
-                        ))}
+                        
+                        {/* Milestone Labels below slider */}
+                        <div className="absolute top-10 w-full flex justify-between text-[9px] text-white/30 font-mono pointer-events-none select-none">
+                           <span>NOW</span>
+                           <span className="pl-2">7D</span>
+                           <span>30D</span>
+                           <span className="pr-2">1Y</span>
+                           <span>∞</span>
+                        </div>
                       </div>
                    </div>
 
