@@ -1,7 +1,7 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { MoodType } from "../types";
 
-// Always use process.env.API_KEY as per guidelines.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const analyzeMood = async (mood: MoodType, userText: string): Promise<string> => {
